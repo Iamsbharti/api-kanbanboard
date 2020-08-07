@@ -28,7 +28,7 @@ exports.setSocketServer = (server) => {
       if (authToken) {
         jwt.verify(authToken, process.env.TOKEN_SECRET, (error, decoded) => {
           if (error != null) {
-            console.log("Auth-Error");
+            console.error("Auth-Error");
             socket.emit("Auth-Error", error);
           } else {
             console.log("________________DECODED__________");
@@ -40,9 +40,9 @@ exports.setSocketServer = (server) => {
 
             let userIdList = [];
             onlineUsers.map((usr) => userIdList.push(usr.userId));
-            console.log("userIdList::", userIdList);
+            //console.log("userIdList::", userIdList);
             if (!userIdList.includes(userId)) {
-              console.log(`${userId}-not found in list`);
+              //console.log(`${userId}-not found in list`);
               onlineUsers.push({ userId: userId, name: name });
             }
             console.log(onlineUsers);

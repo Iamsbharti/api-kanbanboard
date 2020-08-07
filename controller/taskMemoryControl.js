@@ -18,7 +18,7 @@ exports.revertChanges = async (req, res) => {
   let toRevert;
   /**fetch memory snapshot and filter out the latest changes done by that id */
   let memorySnapshots = await MemoryTable.find({ userId: userId });
-  console.log("memory snapshots::", memorySnapshots);
+  //console.log("memory snapshots::", memorySnapshots);
   /**filter out the latest changes done by that id */
   if (memorySnapshots.length !== 0) {
     toRevert = memorySnapshots.reduce(function (prev, current) {

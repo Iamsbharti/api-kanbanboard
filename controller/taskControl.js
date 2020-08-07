@@ -10,7 +10,7 @@ const Historic_Task = require("../models/Historic_Task");
 
 /**Check for valid userId */
 const validUserId = async (userId) => {
-  ////console.log("validate UserId:", userId);
+  //console.log("validate UserId:", userId);
   let validuserId = await User.findOne({ userId: userId });
   return !validuserId
     ? formatResponse(true, 404, "UserId Not Found", userId)
@@ -18,7 +18,7 @@ const validUserId = async (userId) => {
 };
 /**Check for valid taskListId */
 const validTaskListId = async (taskListId) => {
-  ////console.log("validate tasklist id:", taskListId);
+  //console.log("validate tasklist id:", taskListId);
   let validTaskListId = await TaskList.findOne({ taskListId: taskListId });
   return !validTaskListId
     ? formatResponse(true, 404, "TaskListId Not Found", taskListId)
@@ -138,7 +138,7 @@ exports.getAllTasks = async (req, res) => {
     .select(EXCLUDE)
     .lean()
     .exec((error, allTasks) => {
-      //console.log("error", error, allTasks);
+      console.log("error getting all tasks", error);
       if (error !== null) {
         res
           .status(500)
@@ -151,8 +151,9 @@ exports.getAllTasks = async (req, res) => {
     });
 };
 exports.updateTask = async (req, res) => {
-  //console.log("Update task control::");
+  console.log("Update task control::");
   const { taskListId, userId, taskId, update, operation } = req.body;
+  console.log("Update task control::", operation);
   /**verify taskListId */
   let isTaskListValid = await validTaskListId(taskListId);
   //console.log("isTaskListValid::", isTaskListValid);
@@ -218,7 +219,7 @@ exports.updateTask = async (req, res) => {
         updateId: updateId,
         operation: "edit",
       });
-      console.log("history-schema:;", newHistoricSchema);
+      //console.log("history-schema:;", newHistoricSchema);
       /**maintain history */
       let createdTaskHistory = await Historic_Task.create(newHistoricSchema);
       let memorySnapShot = await MemoryTable.create(memory);
@@ -258,7 +259,7 @@ exports.updateTask = async (req, res) => {
       updateId: updateId,
       operation: operation,
     });
-    console.log("history-schema:;", newHistoricSchema);
+    //console.log("history-schema:;", newHistoricSchema);
     /**maintain history and memory map*/
     let createdTaskHistory = await Historic_Task.create(newHistoricSchema);
     let memorySnapShot = await MemoryTable.create(memory);

@@ -16,7 +16,7 @@ const validTaskId = async (taskId) => {
 };
 
 exports.createSubTask = async (req, res) => {
-  //console.log("Create subtask control");
+  console.log("Create subtask control");
   const { name, taskId, status, userId } = req.body;
 
   /**check for valid taskId */
@@ -66,12 +66,13 @@ exports.createSubTask = async (req, res) => {
   //console.log("history-schema:;", newHistoricSchema);
 
   SubTask.create(newSubTask, (error, createdSubTask) => {
-    //console.log("error", error, createdSubTask);
+    console.error("Error Creating SubTask", error);
     if (error !== null) {
       res
         .status(500)
         .json(formatResponse(true, 500, "SubTask Creation Error", error));
     } else {
+      console.log("SubTask Create Success");
       let response = createdSubTask.toObject();
       delete response._id;
       delete response.__v;
@@ -90,7 +91,7 @@ exports.createSubTask = async (req, res) => {
   );
 };
 exports.getSubTasks = async (req, res) => {
-  //console.log("get all subtasks control");
+  console.log("get all subtasks control");
   const { taskId } = req.body;
 
   /**check for valid taskId */
@@ -104,12 +105,13 @@ exports.getSubTasks = async (req, res) => {
     .select(EXCLUDE)
     .lean()
     .exec((error, allsubTasks) => {
-      //console.log("error", error, allsubTasks);
+      console.log("error getting subtasks", error);
       if (error !== null) {
         res
           .status(500)
           .json(formatResponse(true, 500, "Error Fetching Subtasks", error));
       } else {
+        console.log("Fetch SubTask Success");
         res
           .status(200)
           .json(formatResponse(false, 200, "Fetched Subtasks", allsubTasks));
@@ -117,7 +119,7 @@ exports.getSubTasks = async (req, res) => {
     });
 };
 exports.updateSubTask = async (req, res) => {
-  //console.log("Update sub task control::");
+  console.log("Update sub task control::");
   const { subTaskId, taskId, update, operation, userId } = req.body;
   /**----Sanity check--------------- */
   /**check for valid taskId */
