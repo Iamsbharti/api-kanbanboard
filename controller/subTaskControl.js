@@ -104,6 +104,7 @@ exports.getSubTasks = async (req, res) => {
   SubTask.find({ taskId: taskId })
     .select(EXCLUDE)
     .lean()
+    .limit(5)
     .exec((error, allsubTasks) => {
       console.log("error getting subtasks", error);
       if (error !== null) {

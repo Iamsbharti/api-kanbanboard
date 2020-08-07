@@ -137,6 +137,7 @@ exports.getAllTasks = async (req, res) => {
   Task.find(query)
     .select(EXCLUDE)
     .lean()
+    .limit(5)
     .exec((error, allTasks) => {
       console.log("error getting all tasks", error);
       if (error !== null) {
