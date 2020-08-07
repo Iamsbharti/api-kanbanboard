@@ -2,7 +2,7 @@
 
 ### What's in it for me ? :metal:
 
-> This app has been created using Express,NodeMailer,HapiJoi,JsonWebToken and MongoDB as persistance manager.
+> This app has been created using Express,NodeMailer,HapiJoi,JsonWebToken and MongoDB as persistence manager.
 > Hapi Joi helps in Parameter Validation
 > NodeMailer helps in sending emails for password recovery.
 > Authentication is provided by JsonWebToken
