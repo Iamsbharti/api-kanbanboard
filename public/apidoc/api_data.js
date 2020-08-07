@@ -454,7 +454,7 @@ define({ "api": [
   },
   {
     "type": "post",
-    "url": "/api/v1/getAllTaskList",
+    "url": "/api/v1/getAllTaskList?skip=[value]",
     "title": "Get all Tasklists for a user",
     "version": "0.0.1",
     "group": "TaskManagement",
@@ -536,7 +536,7 @@ define({ "api": [
     },
     "filename": "router/apidoc.js",
     "groupTitle": "TaskManagement",
-    "name": "PostApiV1Getalltasklist"
+    "name": "PostApiV1GetalltasklistSkipValue"
   },
   {
     "type": "post",

@@ -333,7 +333,7 @@ router.post(
   getAllTaskList
 );
 /**
- * @api {post} /api/v1/getAllTaskList Get all Tasklists for a user
+ * @api {post} /api/v1/getAllTaskList?skip=[value] Get all Tasklists for a user
  * @apiVersion 0.0.1
  * @apiGroup TaskManagement
  *
