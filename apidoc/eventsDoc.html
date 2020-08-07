@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1.0"
+    />
+    <title>KanBan-Board Events</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&family=Red+Rose&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.1/css/bootstrap.min.css"
+      integrity="sha384-VCmXjywReHh4PwowAiWNagnWcLhlEJLA5buUprzK8rxFgeH0kww/aWY76TfkUoSX"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+      integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.1/js/bootstrap.min.js"
+      integrity="sha384-XEerZL0cuoUbHE4nZReLT7nx9gQrQreJekYhJD9WNWhH8nEW+0c5qq7aIo2Wl30J"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      * {
+        font-family: "Montserrat", sans-serif;
+      }
+      .footer {
+        display: flex;
+        box-sizing: border-box;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" style="width: 80%;">
+      <div class="jumbotron bg-transparent">
+        <h1>KanBan-Board Events Documentation</h1>
+        <p class="lead">
+          This document explains the different events the application listens
+          and emits
+        </p>
+        <hr class="my-4" />
+        <p>Implement the events based on the description and sample examples</p>
+      </div>
+      <span class="badge badge-pill badge-success mb-3">SocketUrl</span>&nbsp;&nbsp;&nbsp;<code>api.kanbanboard.co.in/multiuser</code>
+      <div class="row">
+        <div class="col-6 border bg-light" style="width: 18rem;">
+          <h3>Events To Listen</h3>
+          <hr />
+          <h5 class="badge badge-primary"><b>authenticate event</b></h5>
+          <br />
+          This event <span style="font-weight: 600;">"authenticate"</span> has
+          to be listened on the client's end to verify user authentication.<br />
+          User will then be added to online users's list after authetication<br />
+          <hr />
+          <h5 class="badge badge-primary"><b>Auth-Error event</b></h5>
+          <br />
+          This event <span style="font-weight: 600;">"Auth-error"</span> is
+          listened by client if there is any auth error.<br />
+          User will not be added to online users's list after authetication
+          error<br />
+          <hr />
+          <h5 class="badge badge-primary"><b>online-users event</b></h5>
+          <br />
+          This event <span style="font-weight: 600;">"online-users"</span> is
+          listened by client to view all the online users in the application.<br />
+          <hr />
+          <h5 class="badge badge-primary"><b>recieverId event</b></h5>
+          <br />
+          This event <span style="font-weight: 600;">"recieverId"</span> is
+          listened by user for whom friend request has been sent<br />
+          <br />
+          Client will toasted a friend request and friendlist is updated
+          <hr />
+          <h5 class="badge badge-primary">
+            <b>friend-request-updates event</b>
+          </h5>
+          <br />
+          This event
+          <span style="font-weight: 600;">"friend-request-updates"</span> is
+          listened by user for whom friend request was sent and if the request
+          has <br />
+          been approved/rejected , user is notified in real time
+          <br />
+          Client will toasted a friend request approval or rejection
+          <b>(recieverId also has the same output)</b>
+          <br />
+          Eg:
+          <code>
+            <pre>
+            {
+              "status": "accepted",
+              "createdOn": "2020-08-03T13:07:42.309Z",
+              "uniqueCombination": "F7cL5F5Xm:eetkc3U56",
+              "recieverId":"eetkc3U56",
+              "recieverName": "saurabh bharti",
+              "senderId":"F7cL5F5Xm",
+              "senderName": "nancy sams"
+            }</pre
+            >
+          </code>
+          <hr />
+          <h5 class="badge badge-primary"><b>updates-from-friend event</b></h5>
+          <br />
+          This event
+          <span style="font-weight: 600;">"updates-from-friend"</span> is
+          listened by user whose friend has made any updates to tasks items<br />
+          ,user is notified in real time about the items being updated.
+          <br />
+          Client will toasted about the item being updated and by whom.
+          <br />
+          Eg: It has the notification string and an array of friend's UserID
+          <code>
+            <pre>
+            {
+              "notification":"[user-name] updated a Task",
+              "friendList":[null,ajshter1,AZdvg457]
+            }</pre
+            >
+          </code>
+          <hr />
+          <h5 class="badge badge-primary"><b>friendlist-updates event</b></h5>
+          <br />
+          This event
+          <span style="font-weight: 600;">"friendlist-updates"</span> is
+          listened by user to update the existing friend list after request
+          acceptance/rejection,
+          <br />
+          Client will update the friend list by calling
+          /api/v1/getFriendRequests API Route.
+          <code>No payload is sent here</code>
+          <br />
+        </div>
+        <div class="col-md-5 ml-auto border bg-light">
+          <h3>Events To Emit</h3>
+          <hr />
+          <h5 class="badge badge-success"><b>set-user event</b></h5>
+          <br />
+          This event <span style="font-weight: 600;">"set-user"</span> has to be
+          emitted when user listens to authenticate event<br />
+          Auth token is sent as payload in this event.<br />
+          User will then be added to online users's list after authetication<br />
+          <hr />
+          <h5 class="badge badge-success"><b>sentFriendRequest event</b></h5>
+          <br />
+          This event
+          <span style="font-weight: 600;">"sentFriendRequest"</span> has to be
+          emitted when user sends a friend request to someone<br />
+          The reciever will be notified of this request<br />
+          <b>Payload</b>
+          Eg:
+          <code>
+            <pre>
+            {
+              "status": "pending",
+              "createdOn": "2020-08-03T13:07:42.309Z",
+              "uniqueCombination": "F7cL5F5Xm:eetkc3U56",
+              "recieverId":"eetkc3U56",
+              "recieverName": "saurabh bharti",
+              "senderId":"F7cL5F5Xm",
+              "senderName": "nancy sams"
+            }</pre
+            >
+          </code>
+          <hr />
+          <h5 class="badge badge-success">
+            <b>update-friend-request event</b>
+          </h5>
+          <br />
+          This event
+          <span style="font-weight: 600;">"update-friend-request"</span> is
+          emitted when a action is taken on a friend request<br />
+          User is notified in real time.The friend request is updated at backend
+          <br />
+          Eg:
+          <code>
+            <pre>
+            {
+              "status": "accepted",
+              "createdOn": "2020-08-03T13:07:42.309Z",
+              "uniqueCombination": "F7cL5F5Xm:eetkc3U56",
+              "recieverId":"eetkc3U56",
+              "recieverName": "saurabh bharti",
+              "senderId":"F7cL5F5Xm",
+              "senderName": "nancy sams"
+            }</pre
+            >
+          </code>
+          <hr />
+          <h5 class="badge badge-success">
+            <b> friend-updated-tasks event</b>
+          </h5>
+          <br />
+          This event
+          <span style="font-weight: 600;">"friend-updated-tasks"</span> is
+          emitted by user when he updates any items<br />
+          User is notified in real time about the items being updated.
+          <br />
+          Eg: It has the notification string and an array of friend's UserID
+          <code>
+            <pre>
+            {
+              "notification":"[user-name] updated a Task",
+              "friendList":[null,ajshter1,AZdvg457]
+            }</pre
+            >
+          </code>
+          <hr />
+          <h5 class="badge badge-success"><b>disconnected</b></h5>
+          <br />
+          This event <span style="font-weight: 600;">"set-user"</span> has to be
+          emitted when user logs out.UserId is sent as payload<br />
+          User is removed from online-users list User will then be added to
+          <hr />
+        </div>
+      </div>
+    </div>
+    <footer class="footer">
+      Made with
+      <p style="color: red; font-weight: 15px;">&hearts;</p>
+      &nbsp;by&nbsp; <span>&#169</span>SB
+    </footer>
+  </body>
+</html>
