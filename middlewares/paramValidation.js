@@ -71,7 +71,11 @@ exports.signupParamValidation = (req, res, next) => {
     mobile: joi.number().min(10).required(),
     password: joi
       .string()
-      .pattern(new RegExp("^[A-Za-z0-9]\\w{8,64}$"))
+      .pattern(
+        new RegExp(
+          "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})"
+        )
+      )
       .required(),
   });
 

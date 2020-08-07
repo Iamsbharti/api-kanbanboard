@@ -478,7 +478,7 @@ router.post(
 /**Create task */
 router.post("/createTask", isAuthorized, createTaskValidation, createTask);
 /**
- * @api {post} /api/v1/createTaskList Create a tasklist
+ * @api {post} /api/v1/createTask Create a task
  * @apiVersion 0.0.1
  * @apiGroup TaskManagement
  *
