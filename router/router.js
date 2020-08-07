@@ -26,15 +26,18 @@ const { isAuthorized } = require("../middlewares/authorization");
 const {
   createTaskList,
   getAllTaskList,
-  createTask,
-  createSubTask,
-  getAllTasks,
-  getSubTasks,
   updateTaskList,
-  updateTask,
-  updateSubTask,
 } = require("../controller/taskListControl");
-
+const {
+  createTask,
+  getAllTasks,
+  updateTask,
+} = require("../controller/taskControl");
+const {
+  createSubTask,
+  getSubTasks,
+  updateSubTask,
+} = require("../controller/subTaskControl");
 const { getFriendList } = require("../controller/friendReqSocketControl");
 const { revertChanges } = require("../controller/taskMemoryControl");
 /**Sign up route */

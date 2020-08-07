@@ -52,15 +52,13 @@ exports.signUpControl = async (req, res) => {
   emailExistence(email)
     .then(createNewUser)
     .then((result) => {
-      //console.log("Result", result);
+      console.log("SignUp Success");
       res
         .status(200)
         .json(formatResponse(false, 200, "User Create Sucess", result));
     })
     .catch((error) => {
-      console.log("Error", error);
+      console.error("SignUp Error", error);
       res.status(error.status).json(error);
     });
-
-  //  res.send("SignUp works");
 };

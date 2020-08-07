@@ -4,7 +4,7 @@ const User = require("../models/User");
 const { comparePassword } = require("../library/passwordHandler");
 
 exports.loginControl = async (req, res) => {
-  //console.log("Login Control");
+  console.log("Login Control");
 
   const { email, password } = req.body;
   //emailexistence
@@ -65,14 +65,12 @@ exports.loginControl = async (req, res) => {
     .then(validateCredentials)
     .then(generateToken)
     .then((result) => {
-      ////console.log("login result");
+      console.log("login-result-sucess");
       res.header("authToken", result.authToken);
       res.status(200).json(formatResponse(false, 200, "Login Sucess", result));
     })
     .catch((error) => {
-      //console.log("Error", error);
+      console.log("Error- In Login", error);
       res.status(error.status).json(error);
     });
-  //sendresponse
-  //res.send("Login works");
 };

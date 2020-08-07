@@ -5,9 +5,9 @@ const Task = require("../models/Task");
 const SubTask = require("../models/SubTask");
 const User = require("../models/User");
 const EXCLUDE = "-__v -_id";
-const Historic_TaskList = require("../models/Historic_TaskList");
 const MemoryTable = require("../models/MemoryTable");
 const Historic_Task = require("../models/Historic_Task");
+
 /**Check for valid userId */
 const validUserId = async (userId) => {
   ////console.log("validate UserId:", userId);
@@ -32,107 +32,6 @@ const validTaskId = async (taskId) => {
     ? formatResponse(true, 404, "TaskId Not Found", taskId)
     : true;
 };
-exports.createTaskList = async (req, res) => {
-  //console.log("Task List control");
-  const { name, userId } = req.body;
-  /**Verify userId */
-  let isUserIdValid = await validUserId(userId);
-  //console.log("isUserIdValid::", isUserIdValid);
-  if (isUserIdValid.error)
-    return res.status(isUserIdValid.status).json(isUserIdValid);
-  /**Check for existing task name */
-  let nameExists = await TaskList.findOne({ name: name, userId: userId });
-  if (nameExists)
-    return res
-      .status(400)
-      .json(formatResponse(true, 400, "Task Name already exists", name));
-
-  /**create a new tasklist unique to a userId */
-  let uniqueTaskListId = shortid.generate();
-  let newList = new TaskList({
-    name: name,
-    userId: userId,
-    taskListId: uniqueTaskListId,
-  });
-  /**historic tasklist schema */
-  let createdTimeStamp = Date.now();
-  let updateId = `${userId}:${uniqueTaskListId}:${createdTimeStamp}`;
-  let newHistoricSchema = new Historic_TaskList({
-    updateId: updateId,
-    name: name,
-    taskListId: uniqueTaskListId,
-    userId: userId,
-    operation: "create",
-    createdOn: createdTimeStamp,
-  });
-  /**memory table updates */
-  let memory = new MemoryTable({
-    userId: userId,
-    entity: "TaskList",
-    updatedOn: createdTimeStamp,
-    updateId: updateId,
-    operation: "create",
-  });
-  //console.log("history-schema:;", newHistoricSchema);
-  TaskList.create(newList, (error, createdList) => {
-    //console.log("error", error, createdList);
-    if (error !== null) {
-      console.error("Error Creating TaskList:", error);
-      res
-        .status(500)
-        .json(formatResponse(true, 500, "Task List Create Error", error));
-    } else {
-      let response = createdList.toObject();
-      delete response.__v;
-      delete response._id;
-      res
-        .status(200)
-        .json(formatResponse(false, 200, "Task List Created", response));
-    }
-  });
-  /**maintain history */
-  let createdTaskListHistory = await Historic_TaskList.create(
-    newHistoricSchema
-  );
-  let memorySnapShot = await MemoryTable.create(memory);
-  console.log(
-    "HISTORY UPDATED____",
-    createdTaskListHistory.updateId,
-    memorySnapShot.updateId
-  );
-};
-exports.getAllTaskList = async (req, res) => {
-  //console.log("get all task list control");
-  const { userId } = req.body;
-  const { skip } = req.query;
-
-  /**Verify userId */
-  let isUserIdValid = await validUserId(userId);
-  ////console.log("isUserIdValid::", isUserIdValid);
-  if (isUserIdValid.error)
-    return res.status(isUserIdValid.status).json(isUserIdValid);
-
-  /**fetch all task list for the userid */
-  /**skip and limit are used for pagination purpose */
-  TaskList.find({ userId: userId })
-    .select(EXCLUDE)
-    .lean()
-    .limit(parseInt(skip, 10) || 0)
-    .exec((error, allList) => {
-      // //console.log("error", error, allList);
-      if (error !== null) {
-        res
-          .status(500)
-          .json(
-            formatResponse(true, 500, "Error Fetching TaskLists", error.message)
-          );
-      } else {
-        res
-          .status(200)
-          .json(formatResponse(false, 200, "Task List Fetched", allList));
-      }
-    });
-};
 exports.createTask = async (req, res) => {
   //console.log("create task control");
   const { name, userId, taskListId, status } = req.body;
@@ -145,7 +44,7 @@ exports.createTask = async (req, res) => {
 
   /**Verify userId */
   let isUserIdValid = await validUserId(userId);
-  ////console.log("isUserIdValid::", isUserIdValid);
+  //console.log("isUserIdValid::", isUserIdValid);
   if (isUserIdValid.error)
     return res.status(isUserIdValid.status).json(isUserIdValid);
 
@@ -251,11 +150,9 @@ exports.getAllTasks = async (req, res) => {
       }
     });
 };
-exports.updateTaskList = async (req, res) => {
-  //console.log("Update task list control:");
-  const { update, taskListId, operation, userId } = req.body;
-  //console.log(update, taskListId, operation);
-
+exports.updateTask = async (req, res) => {
+  //console.log("Update task control::");
+  const { taskListId, userId, taskId, update, operation } = req.body;
   /**verify taskListId */
   let isTaskListValid = await validTaskListId(taskListId);
   //console.log("isTaskListValid::", isTaskListValid);
@@ -268,9 +165,14 @@ exports.updateTaskList = async (req, res) => {
   if (isUserIdValid.error)
     return res.status(isUserIdValid.status).json(isUserIdValid);
 
-  /**based on operation value */
+  /**check for valid taskId */
+  let isTaskIdValid = await validTaskId(taskId);
+  //console.log("isTaskIdValid::", isTaskIdValid);
+  if (isTaskIdValid.error)
+    return res.status(isTaskIdValid.status).json(isTaskIdValid);
+
+  let query = { taskListId: taskListId, userId: userId, taskId: taskId };
   if (operation === "edit") {
-    //Update lastlist name
     if (Object.keys(update).length === 0) {
       return res
         .status(400)
@@ -278,49 +180,47 @@ exports.updateTaskList = async (req, res) => {
           formatResponse(true, 400, "Noting to update", "pass valid property")
         );
     } else {
-      let query = { taskListId: taskListId, userId: userId };
-      TaskList.updateOne(query, update, (error, updatedList) => {
-        //console.log("updated list::", error, updatedList);
+      //console.log("Final update option::", update);
+      Task.updateOne(query, update, (error, updatedTask) => {
         if (error !== null) {
           res
             .status(500)
-            .json(formatResponse(true, 500, "TaskList Update Error", null));
+            .json(formatResponse(true, 500, "Error Updating Task", error));
         } else {
-          let { n } = updatedList;
-          //console.log("Updated--", n);
+          let { n } = updatedTask;
           res
             .status(200)
             .json(
-              formatResponse(false, 200, "TaskList Updated", `${n}-doc updated`)
+              formatResponse(false, 200, "Task Updated", `${n}-doc updated`)
             );
         }
       });
       /**maintain history */
-      let uniqueTaskListId = taskListId;
+      let uniqueTaskId = taskId;
       let createdTimeStamp = Date.now();
-      let updateId = `${userId}:${uniqueTaskListId}:${createdTimeStamp}`;
+      let updateId = `${userId}:${uniqueTaskId}:${createdTimeStamp}`;
       /**historic task schema */
-      let newHistoricSchema = new Historic_TaskList({
+      let newHistoricSchema = new Historic_Task({
         updateId: updateId,
         name: update.name,
-        taskListId: uniqueTaskListId,
+        status: update.status,
+        taskId: uniqueTaskId,
+        taskListId: taskListId,
         userId: userId,
-        operation: operation,
+        operation: "edit",
         createdOn: createdTimeStamp,
       });
       /**memory table schema */
       let memory = new MemoryTable({
         userId: userId,
-        entity: "TaskList",
+        entity: "Task",
         updatedOn: createdTimeStamp,
         updateId: updateId,
-        operation: operation,
+        operation: "edit",
       });
-      //console.log("history-schema:;", newHistoricSchema);
+      console.log("history-schema:;", newHistoricSchema);
       /**maintain history */
-      let createdTaskHistory = await Historic_TaskList.create(
-        newHistoricSchema
-      );
+      let createdTaskHistory = await Historic_Task.create(newHistoricSchema);
       let memorySnapShot = await MemoryTable.create(memory);
       console.log(
         "HISTORY UPDATED____",
@@ -330,21 +230,22 @@ exports.updateTaskList = async (req, res) => {
     }
   }
   if (operation === "delete") {
-    //console.log("delete task and related task and subtasks");
-    let query = { taskListId: taskListId, userId: userId };
-    /**maintain history before delete*/
-    /**get info about tasklist being deleted */
-    let toBeDeletedTaskList = await TaskList.findOne({
-      taskListId: taskListId,
+    //console.log("Delete task");
+    /**maintain history */
+    /**get info about task being deleted */
+    let toBeDeletedTask = await Task.findOne({
+      taskId: taskId,
     });
-    let uniqueTaskListId = taskListId;
+    let uniqueTaskId = taskId;
     let createdTimeStamp = Date.now();
-    let updateId = `${userId}:${uniqueTaskListId}:${createdTimeStamp}`;
+    let updateId = `${userId}:${uniqueTaskId}:${createdTimeStamp}`;
     /**historic task schema */
-    let newHistoricSchema = new Historic_TaskList({
+    let newHistoricSchema = new Historic_Task({
       updateId: updateId,
-      name: toBeDeletedTaskList.name,
-      taskListId: uniqueTaskListId,
+      name: toBeDeletedTask.name,
+      status: toBeDeletedTask.status,
+      taskId: uniqueTaskId,
+      taskListId: toBeDeletedTask.taskListId,
       userId: userId,
       operation: operation,
       createdOn: createdTimeStamp,
@@ -352,64 +253,36 @@ exports.updateTaskList = async (req, res) => {
     /**memory table schema */
     let memory = new MemoryTable({
       userId: userId,
-      entity: "TaskList",
+      entity: "Task",
       updatedOn: createdTimeStamp,
       updateId: updateId,
       operation: operation,
     });
     console.log("history-schema:;", newHistoricSchema);
-    /**maintain history */
-    let createdTaskHistory = await Historic_TaskList.create(newHistoricSchema);
+    /**maintain history and memory map*/
+    let createdTaskHistory = await Historic_Task.create(newHistoricSchema);
     let memorySnapShot = await MemoryTable.create(memory);
     console.log(
       "HISTORY UPDATED____",
       createdTaskHistory.updateId,
       memorySnapShot.updateId
     );
-    /**find taskId and to delete it's subtasks */
-    //console.log("Fetching task ids for userid and taskList Id");
-    let taskDetails = await Task.find(query).select("taskId").lean().exec();
-    let taskIdsArray = [];
-    //console.log("taskDetails::", taskDetails);
-    taskDetails.map((task) => taskIdsArray.push(task.taskId));
-    //console.log("TasksIds::", taskIdsArray);
-
-    /**delete subtasks based on taskid */
-    //console.log("Deleting subtasks based on fetched taskId");
-    taskIdsArray.map((task) =>
-      SubTask.deleteMany({ taskId: task.taskId }, (error, deleted) => {
+    /**delete/cleanup subsequent subtasks */
+    let deletedSubTasks = await SubTask.deleteMany({ taskId: taskId });
+    deletedSubTasks &&
+      Task.deleteOne(query, (error, deletedTask) => {
         if (error !== null) {
-          //console.log("Error deleting SubTasks::", error);
+          res
+            .status(500)
+            .json(formatResponse(true, 500, "Error Deleting Task", error));
         } else {
-          let { n } = deleted;
-          //console.log("Subtask Delted::", `${n}-docs deleted`);
+          let { n } = deletedTask;
+          res
+            .status(200)
+            .json(
+              formatResponse(false, 200, "Task Deleted", `${n}-doc deleted`)
+            );
         }
-      })
-    );
-    /**delete tasks based on userid and taskListID */
-    //console.log("sub tasks deleted now deleting tasks");
-    let deletedTask = await Task.deleteMany(query);
-    console.log(
-      "Deleted task before deleting tasklist::",
-      deletedTask.n + "-docs deleted"
-    );
-    /**delete taskList */
-    //console.log("Dependencies deleted ,now delete tasklist");
-    TaskList.deleteOne(query, (error, deletedList) => {
-      //console.log("Error-deleted::", error, deletedList);
-      if (error != null) {
-        res
-          .status(500)
-          .json(formatResponse(true, 500, "TaskLIst Delete Error", error));
-      } else {
-        let { n } = deletedList;
-        res
-          .status(200)
-          .json(
-            formatResponse(false, 200, "TaskList deleted", `${n}-docs deleted`)
-          );
-      }
-    });
+      });
   }
-  /**memory snapshots updates */
 };

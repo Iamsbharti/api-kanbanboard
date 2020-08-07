@@ -2,7 +2,7 @@ const User = require("../models/User");
 const { formatResponse } = require("../library/formatResponse");
 const { hashPassword } = require("../library/passwordHandler");
 const nodemailer = require("nodemailer");
-const { format } = require("path");
+
 //emailExistence
 const emailExistence = async (email) => {
   let userExists = await User.findOne({ email: email });
@@ -24,24 +24,7 @@ exports.recoverPwdControl = async (req, res) => {
     let update = { passwordRecoverCode: recoveryCode };
     let recoveryResponse;
     let { n } = await User.updateOne(query, update);
-    /*User.updateOne(query, update, (error, n) => {
-      console.log("updatederror", `${n.n} updated--${error}`);
-      if (error !== null) {
-        recoveryResponse = Promise.reject(
-          formatResponse(true, 500, "Recover Code gen Error", error)
-        );
-      } else {
-        console.log("updated code");
-        let result = {
-          updated: n.n,
-          email: email,
-          recoveryCode: recoveryCode,
-        };
-        console.log("finalres", result);
-        recoveryResponse = Promise.resolve(result);
-      }
-    });*/
-    //console.log("updated recovery code", n);
+
     if (n === 1) {
       //console.log("updated code");
       let result = {
@@ -106,7 +89,7 @@ exports.recoverPwdControl = async (req, res) => {
     .then(generateRecoveryCode)
     .then(sendEmail)
     .then((result) => {
-      //console.log("Recovery code Result", result);
+      console.log("Recovery Email Sent");
       res
         .status(200)
         .json(formatResponse(false, 200, "Recovery Sucess", result));
@@ -115,7 +98,6 @@ exports.recoverPwdControl = async (req, res) => {
       console.log("Error", error);
       res.status(error.status).json(error);
     });
-  //res.send("Recover password success");
 };
 exports.resetPassword = async (req, res) => {
   console.log("validate recovery code and reset Password");
@@ -136,7 +118,7 @@ exports.resetPassword = async (req, res) => {
   };
   //reset password and recovery code
   const resetPassword = async (foundUser) => {
-    console.log("reset password");
+    //console.log("reset password");
     let query = { email: foundUser.email };
     let update = {
       password: await hashPassword(password),
@@ -172,5 +154,4 @@ exports.resetPassword = async (req, res) => {
       console.log("Error", error);
       res.status(error.status).json(error);
     });
-  //res.send("Reset Works");
 };
